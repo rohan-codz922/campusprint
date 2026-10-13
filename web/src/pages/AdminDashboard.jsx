@@ -100,7 +100,7 @@ export default function AdminDashboard() {
                       <td><strong className="clip">{r.fileName}</strong><span className="muted small">Job {r.id} · {when(r.createdAt)}</span>
                         {r.notes && <span className="note">“{r.notes}”</span>}</td>
                       <td>{r.student.name}<span className="muted small">{r.student.rollNo ? `Roll ${r.student.rollNo}` : r.student.email}</span></td>
-                      <td>{r.service.name}<span className="muted small">{r.pages} pages × {r.copies}</span></td>
+                      <td>{r.service.name}<span className="muted small">{r.pages} {r.pages === 1 ? 'page' : 'pages'} × {r.copies}</span></td>
                       <td className="num">{rupees(r.totalPrice)}</td>
                       <td>
                         {r.status === 'CANCELLED' ? <StatusBadge status="CANCELLED" /> : (

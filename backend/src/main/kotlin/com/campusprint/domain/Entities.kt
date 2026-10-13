@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -78,9 +80,9 @@ class PrintRequest(
     @Column(nullable = false)
     var fileName: String,
 
-    /** Random name the file has on disk, so two uploads can never collide. */
+    /** Id of the row in stored_files that holds the uploaded document's bytes. */
     @Column(nullable = false)
-    var storedFileName: String,
+    var fileId: Long,
 
     @Column(nullable = false)
     var pages: Int,
@@ -104,6 +106,26 @@ class PrintRequest(
 
     @Column(nullable = false)
     var updatedAt: Instant = Instant.now(),
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null,
+)
+
+/**
+ * The uploaded document itself, kept in the database (bytea in PostgreSQL).
+ * It lives in its own table so listing print requests never loads file bytes.
+ * Unlike files on a server disk, it survives redeploys and restarts.
+ */
+@Entity
+@Table(name = "stored_files")
+class StoredFile(
+    @Column(nullable = false)
+    var contentType: String,
+
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Column(nullable = false, length = 10_485_760)
+    var data: ByteArray,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

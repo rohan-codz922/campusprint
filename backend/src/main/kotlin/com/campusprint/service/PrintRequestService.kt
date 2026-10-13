@@ -9,7 +9,7 @@ import com.campusprint.dto.StatsDto
 import com.campusprint.dto.toDto
 import com.campusprint.repository.PrintRequestRepository
 import com.campusprint.repository.PrintServiceRepository
-import org.springframework.core.io.Resource
+import com.campusprint.domain.StoredFile
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -42,7 +42,7 @@ class PrintRequestService(
             throw ApiException(HttpStatus.BAD_REQUEST, "Choose a print option.")
         }
 
-        val storedName = storage.store(file)
+        val fileId = storage.store(file)
 
         // The price is ALWAYS calculated here. The browser's estimate is only a preview,
         // so a student cannot send a fake total.
@@ -55,7 +55,7 @@ class PrintRequestService(
                 student = student,
                 service = service,
                 fileName = (file.originalFilename ?: "document").take(255),
-                storedFileName = storedName,
+                fileId = fileId,
                 pages = pages,
                 copies = copies,
                 notes = (notes ?: "").trim().take(300),
@@ -106,12 +106,12 @@ class PrintRequestService(
 
     /** The owner or an admin may download the file. */
     @Transactional(readOnly = true)
-    fun fileFor(user: AppUser, id: Long): Pair<PrintRequest, Resource> {
+    fun fileFor(user: AppUser, id: Long): Pair<PrintRequest, StoredFile> {
         val request = find(id)
         if (user.role != Role.ADMIN && request.student.id != user.id) {
             throw ApiException(HttpStatus.NOT_FOUND, "Print job not found.")
         }
-        return request to storage.load(request.storedFileName)
+        return request to storage.load(request.fileId)
     }
 
     @Transactional(readOnly = true)

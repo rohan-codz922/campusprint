@@ -6,7 +6,6 @@ import com.campusprint.dto.StatsDto
 import com.campusprint.dto.StatusUpdate
 import com.campusprint.service.PrintRequestService
 import jakarta.validation.Valid
-import org.springframework.core.io.Resource
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -61,15 +60,15 @@ class PrintRequestController(private val requests: PrintRequestService) {
 
     /** Owner or ADMIN: download the uploaded file. */
     @GetMapping("/api/requests/{id}/file")
-    fun file(@AuthenticationPrincipal user: AppUser, @PathVariable("id") id: Long): ResponseEntity<Resource> {
-        val (request, resource) = requests.fileFor(user, id)
+    fun file(@AuthenticationPrincipal user: AppUser, @PathVariable("id") id: Long): ResponseEntity<ByteArray> {
+        val (request, stored) = requests.fileFor(user, id)
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .header(
                 HttpHeaders.CONTENT_DISPOSITION,
                 ContentDisposition.attachment().filename(request.fileName).build().toString(),
             )
-            .body(resource)
+            .body(stored.data)
     }
 
     /** ADMIN: numbers for the dashboard strip. */
