@@ -1,6 +1,7 @@
 package com.campusprint.repository
 
 import com.campusprint.domain.AppUser
+import com.campusprint.domain.PasswordReset
 import com.campusprint.domain.PrintRequest
 import com.campusprint.domain.PrintService
 import com.campusprint.domain.Role
@@ -13,6 +14,7 @@ interface UserRepository : JpaRepository<AppUser, Long> {
     fun findByEmailIgnoreCase(email: String): AppUser?
     fun existsByEmailIgnoreCase(email: String): Boolean
     fun existsByRole(role: Role): Boolean
+    fun findFirstByRole(role: Role): AppUser?
 }
 
 interface PrintServiceRepository : JpaRepository<PrintService, Long>
@@ -23,3 +25,7 @@ interface PrintRequestRepository : JpaRepository<PrintRequest, Long> {
 }
 
 interface StoredFileRepository : JpaRepository<StoredFile, Long>
+
+interface PasswordResetRepository : JpaRepository<PasswordReset, Long> {
+    fun findByEmail(email: String): PasswordReset?
+}

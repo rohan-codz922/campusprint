@@ -131,3 +131,28 @@ class StoredFile(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 )
+
+/** One pending password-reset code per account. Only a hash of the 6-digit code is stored. */
+@Entity
+@Table(name = "password_resets")
+class PasswordReset(
+    @Column(nullable = false)
+    var email: String,
+
+    @Column(nullable = false)
+    var codeHash: String,
+
+    @Column(nullable = false)
+    var expiresAt: Instant,
+
+    /** Wrong guesses so far. After 5 the code is destroyed. */
+    @Column(nullable = false)
+    var attempts: Int = 0,
+
+    @Column(nullable = false)
+    var createdAt: Instant = Instant.now(),
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null,
+)

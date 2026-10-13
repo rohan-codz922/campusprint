@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { isDemo } from '../api'
 
-function AuthShell({ title, intro, children, footer }) {
+export function AuthShell({ title, intro, children, footer }) {
   return (
     <main id="main" className="wrap auth">
       <div className="auth-form">
@@ -57,6 +57,7 @@ export function Login() {
         <label className="field"><span>Password</span>
           <input type="password" autoComplete="current-password" required value={form.password} onChange={set('password')} />
         </label>
+        <Link className="forgot" to="/forgot-password">Forgot password?</Link>
         {error && <p className="inline-error" role="alert">{error}</p>}
         <button className="btn btn-primary btn-block" disabled={busy || !form.email || !form.password}>
           {busy ? 'Signing in…' : 'Sign in'}

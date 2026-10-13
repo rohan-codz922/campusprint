@@ -35,7 +35,12 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                    .requestMatchers(
+                        "/api/auth/register",
+                        "/api/auth/login",
+                        "/api/auth/forgot-password",
+                        "/api/auth/reset-password",
+                    ).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                     .requestMatchers("/api/services/**").hasRole("ADMIN")
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")

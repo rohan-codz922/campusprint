@@ -7,6 +7,7 @@ import com.campusprint.domain.Role
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import java.math.BigDecimal
 import java.time.Instant
@@ -34,6 +35,22 @@ data class RegisterRequest(
 data class LoginRequest(
     @field:NotBlank(message = "Email is required.") val email: String,
     @field:NotBlank(message = "Password is required.") val password: String,
+)
+
+data class ForgotPasswordRequest(
+    @field:NotBlank(message = "Email is required.")
+    @field:Email(message = "Enter a valid email address.")
+    val email: String,
+)
+
+data class ResetPasswordRequest(
+    @field:NotBlank(message = "Email is required.") val email: String,
+
+    @field:Pattern(regexp = "\\d{6}", message = "Enter the 6-digit code from your email.")
+    val code: String,
+
+    @field:Size(min = 6, max = 100, message = "Password must be at least 6 characters.")
+    val newPassword: String,
 )
 
 data class UserDto(val id: Long, val name: String, val email: String, val role: Role, val rollNo: String?)

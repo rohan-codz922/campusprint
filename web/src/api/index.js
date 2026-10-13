@@ -49,6 +49,8 @@ const realApi = {
   register: (data) => http('/api/auth/register', { method: 'POST', json: data, auth: false }),
   login: (data) => http('/api/auth/login', { method: 'POST', json: data, auth: false }),
   me: () => http('/api/auth/me'),
+  forgotPassword: (email) => http('/api/auth/forgot-password', { method: 'POST', json: { email }, auth: false }),
+  resetPassword: (data) => http('/api/auth/reset-password', { method: 'POST', json: data, auth: false }),
 
   getServices: () => http('/api/services', { auth: false }),
   createService: (data) => http('/api/services', { method: 'POST', json: data }),

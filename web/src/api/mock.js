@@ -75,6 +75,22 @@ export const mockApi = {
     return { token: `demo.${u.id}`, user: publicUser(u) }
   },
 
+  // Demo mode has no email. The code is always 123456 (shown on the screen).
+  async forgotPassword() {
+    await delay()
+    return { message: 'If that email has an account, we have sent a 6-digit code. It expires in 10 minutes.' }
+  },
+
+  async resetPassword({ email, code, newPassword }) {
+    await delay()
+    const users = read(K.users, [])
+    const i = users.findIndex((u) => u.email.toLowerCase() === email.toLowerCase() && u.role === 'STUDENT')
+    if (code !== '123456' || i < 0) fail('That code is incorrect or has expired.')
+    users[i] = { ...users[i], password: newPassword }
+    write(K.users, users)
+    return { message: 'Password changed. You can sign in now.' }
+  },
+
   async me() { await delay(120); return publicUser(current()) },
 
   async getServices() { await delay(120); return read(K.services, []) },

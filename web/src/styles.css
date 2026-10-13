@@ -141,6 +141,11 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--c
 .demo-box { margin-top: 1.5rem; padding: 1rem; border: 1.5px dashed var(--line); border-radius: 8px; display: grid; gap: .6rem; }
 .demo-box p { font-weight: 600; font-size: .9rem; }
 
+.linklike { background: none; border: 0; padding: 0; color: var(--cyan-d); text-decoration: underline; cursor: pointer; font: inherit; }
+.forgot { display: inline-block; margin: -.2rem 0 1rem; font-size: .9rem; }
+.notice { color: var(--cyan-d); background: var(--cyan-t); border-left: 3px solid var(--cyan); padding: .6rem .8rem; border-radius: 4px; font-size: .9rem; margin-bottom: .9rem; }
+.code-input { letter-spacing: .5em; font-size: 1.4rem; text-align: center; font-variant-numeric: tabular-nums; }
+
 /* ---------- Dashboards ---------- */
 .page { padding: 2rem 0 3rem; }
 .page-h { display: grid; gap: .35rem; margin-bottom: 1.75rem; }
