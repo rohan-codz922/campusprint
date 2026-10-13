@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api'
+import PasswordField from '../components/PasswordField'
 
 export function AuthShell({ title, intro, children, footer }) {
   return (
@@ -58,11 +59,9 @@ export function Login() {
       footer={<>New here? <Link to="/register">Create a student account</Link></>}>
       <form onSubmit={submit} noValidate>
         <label className="field"><span>Email</span>
-          <input type="email" autoComplete="email" required value={form.email} onChange={set('email')} />
+          <input type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} inputMode="email" required value={form.email} onChange={set('email')} />
         </label>
-        <label className="field"><span>Password</span>
-          <input type="password" autoComplete="current-password" required value={form.password} onChange={set('password')} />
-        </label>
+        <PasswordField label="Password" autoComplete="current-password" value={form.password} onChange={set('password')} />
         <Link className="forgot" to="/forgot-password">Forgot password?</Link>
         {error && <p className="inline-error" role="alert">{error}</p>}
         <button className="btn btn-primary btn-block" disabled={busy || !form.email || !form.password}>
@@ -109,12 +108,10 @@ export function Register() {
           <input value={form.rollNo} onChange={set('rollNo')} />
         </label>
         <label className="field"><span>Email</span>
-          <input type="email" autoComplete="email" required value={form.email} onChange={set('email')} />
+          <input type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} inputMode="email" required value={form.email} onChange={set('email')} />
         </label>
-        <label className="field"><span>Password</span>
-          <input type="password" autoComplete="new-password" required value={form.password} onChange={set('password')} aria-describedby="pw-help" />
-          <small id="pw-help">At least 8 characters, with a letter and a number.</small>
-        </label>
+        <PasswordField label="Password" autoComplete="new-password" value={form.password} onChange={set('password')}
+          help="At least 8 characters, with a letter and a number." />
         {error && <p className="inline-error" role="alert">{error}</p>}
         <button className="btn btn-primary btn-block" disabled={busy || !valid}>
           {busy ? 'Sending code…' : 'Create account'}

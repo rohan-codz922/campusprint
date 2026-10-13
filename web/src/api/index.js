@@ -18,6 +18,11 @@ export class ApiError extends Error {
   }
 }
 
+// If a request takes this long, the free server is most likely waking up. The navbar shows a notice.
+const SLOW_MS = 4000
+let slowCount = 0
+const announce = () => window.dispatchEvent(new CustomEvent('cp:slow', { detail: slowCount }))
+
 async function http(path, { method = 'GET', json, form, auth = true, blob = false } = {}) {
   if (!BASE) throw new ApiError('The website is not connected to a server yet.', 0)
   const headers = {}
@@ -31,10 +36,15 @@ async function http(path, { method = 'GET', json, form, auth = true, blob = fals
   }
 
   let res
+  let flagged = false
+  const timer = setTimeout(() => { flagged = true; slowCount += 1; announce() }, SLOW_MS)
   try {
     res = await fetch(`${BASE}${path}`, { method, headers, body })
   } catch {
     throw new ApiError('Cannot reach the server. Check your connection and try again.', 0)
+  } finally {
+    clearTimeout(timer)
+    if (flagged) { slowCount -= 1; announce() }
   }
 
   if (!res.ok) {

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useToast } from '../components/Toast'
 import { AuthShell } from './Auth'
+import PasswordField from '../components/PasswordField'
 
 // Two steps: (1) enter email -> we send a 6-digit code, (2) enter code + new password.
 export default function ForgotPassword() {
@@ -48,7 +49,7 @@ export default function ForgotPassword() {
         footer={<>Remembered it? <Link to="/login">Sign in</Link></>}>
         <form onSubmit={sendCode} noValidate>
           <label className="field"><span>Email</span>
-            <input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </label>
           {error && <p className="inline-error" role="alert">{error}</p>}
           <button className="btn btn-primary btn-block" disabled={busy || !/\S+@\S+\.\S+/.test(email)}>
@@ -68,11 +69,8 @@ export default function ForgotPassword() {
           <input className="code-input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
         </label>
-        <label className="field"><span>New password</span>
-          <input type="password" autoComplete="new-password" required value={password}
-            onChange={(e) => setPassword(e.target.value)} aria-describedby="np-help" />
-          <small id="np-help">At least 8 characters, with a letter and a number.</small>
-        </label>
+        <PasswordField label="New password" autoComplete="new-password" value={password}
+          onChange={(e) => setPassword(e.target.value)} help="At least 8 characters, with a letter and a number." />
         {error && <p className="inline-error" role="alert">{error}</p>}
         <button className="btn btn-primary btn-block" disabled={busy || code.length !== 6 || !passwordOk}>
           {busy ? 'Saving…' : 'Change password'}

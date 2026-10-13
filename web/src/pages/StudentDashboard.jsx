@@ -45,10 +45,15 @@ export default function StudentDashboard() {
               : `Hello, ${user.name.split(' ')[0]}. ${ready ? `${plural(ready, 'print')} ready to collect. ` : ''}${active ? `${active} in progress.` : ''}`}
           </p>
         </div>
-        <Link className="btn btn-primary btn-lg" to="/student/new"><Icon name="plus" size={20} /> New print</Link>
+        <Link className={`btn btn-primary btn-lg ${!loading && requests.length === 0 ? 'hide-sm' : ''}`} to="/student/new"><Icon name="plus" size={20} /> New print</Link>
       </header>
 
-      {loading ? null : requests.length === 0 ? (
+      {loading ? (
+        <ul className="prints" role="status">
+          <li className="sr">Loading your prints…</li>
+          <li className="skel-card" aria-hidden="true" /><li className="skel-card" aria-hidden="true" />
+        </ul>
+      ) : requests.length === 0 ? (
         <section className="blank">
           <Link to="/student/new" className="blank-plus" aria-label="Add your first print"><Icon name="plus" size={34} /></Link>
           <h2>Add your first print</h2>

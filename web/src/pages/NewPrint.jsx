@@ -136,17 +136,17 @@ export default function NewPrint() {
                 {file ? (
                   <span>
                     <strong>{file.name}</strong>
-                    <small>{counting ? 'Counting pages…' : pages ? `${plural(pages, 'page')} · ${formatSize(file.size)} · click to replace` : formatSize(file.size)}</small>
+                    <small>{counting ? 'Counting pages…' : pages ? <>{plural(pages, 'page')} · {formatSize(file.size)} · <span className="only-mouse">click</span><span className="only-touch">tap</span> to replace</> : formatSize(file.size)}</small>
                   </span>
                 ) : (
-                  <span><strong>Choose a file or drop it here</strong><small>PDF, JPG or PNG · up to 10 MB · Word files: save as PDF first</small></span>
+                  <span><strong>Choose a file<span className="only-mouse"> or drop it here</span></strong><small>PDF, JPG or PNG · up to 10 MB · Word files: save as PDF first</small></span>
                 )}
               </label>
             </div>
 
             <label className="field"><span>Print option</span>
               <select value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
-                {services.map((s) => <option key={s.id} value={s.id}>{s.name} · {rupees(s.pricePerPage)} per page</option>)}
+                {services.map((s) => <option key={s.id} value={s.id}>{s.name} · {rupees(s.pricePerPage)}/page</option>)}
               </select>
             </label>
 
@@ -175,9 +175,12 @@ export default function NewPrint() {
             )}
 
             {error && <p className="inline-error" role="alert">{error}</p>}
-            <button className="btn btn-primary btn-lg" disabled={busy || counting || !pages}>
-              {busy ? 'Sending…' : payOnline ? 'Continue to payment' : 'Send to print desk'}
-            </button>
+            <div className="actionbar">
+              <div className="ab-total" aria-live="polite"><small>Total</small><strong>{rupees(total)}</strong></div>
+              <button className="btn btn-primary btn-lg" disabled={busy || counting || !pages}>
+                {busy ? 'Sending…' : payOnline ? 'Continue to payment' : 'Send to print desk'}
+              </button>
+            </div>
           </form>
 
           <div className="side-sticky">
@@ -212,7 +215,7 @@ export default function NewPrint() {
             </div>
           )}
 
-          <div className="row">
+          <div className="row btn-pair">
             <button className="btn btn-quiet" onClick={() => setStep('details')}>Back</button>
             <button className="btn btn-primary btn-lg" onClick={() => { setError(''); setStep('proof') }}>I have paid</button>
           </div>
@@ -227,13 +230,13 @@ export default function NewPrint() {
             <label htmlFor="proof">
               <Icon name={proof ? 'image' : 'upload'} size={26} />
               {proof
-                ? <span><strong>{proof.name}</strong><small>{formatSize(proof.size)} · click to replace</small></span>
+                ? <span><strong>{proof.name}</strong><small>{formatSize(proof.size)} · <span className="only-mouse">click</span><span className="only-touch">tap</span> to replace</small></span>
                 : <span><strong>Choose your payment screenshot</strong><small>PNG or JPG · up to 3 MB</small></span>}
             </label>
           </div>
           {proofUrl && <img className="proof-preview" src={proofUrl} alt="Preview of your payment screenshot" />}
           {error && <p className="inline-error" role="alert">{error}</p>}
-          <div className="row">
+          <div className="row btn-pair">
             <button className="btn btn-quiet" onClick={() => setStep('pay')} disabled={busy}>Back</button>
             <button className="btn btn-primary btn-lg" onClick={submit} disabled={busy || !proof}>
               {busy ? 'Sending…' : 'Submit print request'}

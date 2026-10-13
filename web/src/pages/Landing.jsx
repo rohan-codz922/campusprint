@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
@@ -13,19 +13,25 @@ export default function Landing() {
   const [pages, setPages] = useState(12)
   const [copies, setCopies] = useState(2)
 
-  useEffect(() => {
-    let alive = true
+  const alive = useRef(true)
+  const load = useCallback(() => {
+    setState('loading')
     api.getServices()
       .then((all) => {
-        if (!alive) return
+        if (!alive.current) return
         const active = all.filter((s) => s.active)
         setServices(active)
         setServiceId(active[0] ? String(active[0].id) : '')
         setState('ready')
       })
-      .catch(() => alive && setState('error'))
-    return () => { alive = false }
+      .catch(() => alive.current && setState('error'))
   }, [])
+
+  useEffect(() => {
+    alive.current = true
+    load()
+    return () => { alive.current = false }
+  }, [load])
 
   const service = services.find((s) => String(s.id) === serviceId)
   const dash = user ? (user.role === 'ADMIN' ? '/admin' : '/student') : '/register'
@@ -39,7 +45,7 @@ export default function Landing() {
             Upload your assignment, report or poster, choose the paper, and see the exact price before you
             send it. The print desk gets your job in a queue and you can follow it until it is ready.
           </p>
-          <div className="row">
+          <div className="row cta-row">
             <Link className="btn btn-primary btn-lg" to={dash}>{user ? 'Open your dashboard' : 'Create a free account'}</Link>
             {!user && <Link className="btn btn-quiet btn-lg" to="/login">I already have an account</Link>}
           </div>
@@ -68,9 +74,10 @@ export default function Landing() {
             </div>
           </form>
           {state === 'error' && (
-            <p className="inline-error" role="alert">
-              The server is waking up or unreachable. Wait a few seconds and refresh the page.
-            </p>
+            <div className="inline-error with-action" role="alert">
+              <span>We could not load the prices. The server may be waking up.</span>
+              <button type="button" className="btn btn-quiet" onClick={load}>Try again</button>
+            </div>
           )}
           <Ticket service={service} pages={pages} copies={copies} total={estimate(service, pages, copies)} />
         </div>
@@ -89,7 +96,7 @@ export default function Landing() {
         <h2>Print options and prices</h2>
         {state === 'ready' ? (
           <div className="table-wrap">
-            <table className="table">
+            <table className="table priceable">
               <thead><tr><th>Option</th><th>Paper and finish</th><th className="num">Per page</th></tr></thead>
               <tbody>
                 {services.map((s) => (
@@ -98,7 +105,12 @@ export default function Landing() {
               </tbody>
             </table>
           </div>
-        ) : <p className="muted">{state === 'loading' ? 'Loading prices…' : 'Prices are unavailable right now.'}</p>}
+        ) : state === 'loading' ? (
+          <div className="skel-list" role="status">
+            <span className="sr">Loading prices…</span>
+            <div className="skel" aria-hidden="true" /><div className="skel" aria-hidden="true" />
+          </div>
+        ) : <p className="muted">Prices are unavailable right now.</p>}
       </section>
 
       <footer className="foot">

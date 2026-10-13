@@ -60,7 +60,7 @@ export default function VerifyEmail() {
         {info && <p className="notice">{info}</p>}
         {!state?.email && (
           <label className="field"><span>Email</span>
-            <input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </label>
         )}
         <label className="field"><span>6-digit code</span>
@@ -73,7 +73,7 @@ export default function VerifyEmail() {
         </button>
       </form>
       <p className="auth-foot">
-        <button type="button" className="linklike" onClick={resend} disabled={cooldown > 0 || !email}>
+        <button type="button" className="linklike resend" onClick={resend} disabled={cooldown > 0 || !email}>
           {cooldown > 0 ? `Send a new code in ${cooldown}s` : 'Send a new code'}
         </button>
       </p>

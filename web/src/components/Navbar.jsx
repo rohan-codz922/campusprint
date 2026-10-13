@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { RegMark } from './Icon'
 import Icon from './Icon'
+import SlowNotice from './SlowNotice'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -30,11 +31,12 @@ export default function Navbar() {
           ) : (
             <>
               <Link className="btn btn-quiet" to="/login">Sign in</Link>
-              <Link className="btn btn-primary" to="/register">Create account</Link>
+              <Link className="btn btn-primary" to="/register"><span className="long">Create account</span><span className="short">Sign up</span></Link>
             </>
           )}
         </nav>
       </div>
+      <SlowNotice />
     </header>
   )
 }

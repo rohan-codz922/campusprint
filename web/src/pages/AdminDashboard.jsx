@@ -103,7 +103,12 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {loading ? <p className="muted">Loading the queue…</p> : visible.length === 0 ? (
+          {loading ? (
+            <ul className="jobs-admin" role="status">
+              <li className="sr">Loading the queue…</li>
+              <li className="skel-card" aria-hidden="true" /><li className="skel-card" aria-hidden="true" />
+            </ul>
+          ) : visible.length === 0 ? (
             <div className="empty"><Icon name="inbox" size={28} /><p><strong>Nothing here.</strong> Jobs that match this filter will appear in this list.</p></div>
           ) : (
             <ul className="jobs-admin">
@@ -112,9 +117,8 @@ export default function AdminDashboard() {
                 return (
                   <li key={r.id} className={`jrow ${r.paymentStatus === 'SUBMITTED' ? 'needs-check' : ''}`}>
                     <div className="j-main">
-                      <span className="jobno">Job #{r.id}</span>
+                      <span className="j-meta"><span className="jobno">Job #{r.id}</span><span className="muted small">{when(r.createdAt)}</span></span>
                       <strong className="clip" title={r.fileName}>{r.fileName}</strong>
-                      <span className="muted small">{when(r.createdAt)}</span>
                       {r.notes && <span className="note">“{r.notes}”</span>}
                     </div>
 
@@ -141,7 +145,7 @@ export default function AdminDashboard() {
                           </div>
                         )}
                         <div className="acts">
-                          <button className="btn btn-quiet btn-icon" onClick={() => download(r)} aria-label={`Download ${r.fileName}`} title="Download file"><Icon name="download" size={18} /></button>
+                          <button className="btn btn-quiet btn-icon" onClick={() => download(r)} aria-label={`Download ${r.fileName}`} title="Download file"><Icon name="download" size={18} /><span className="lbl">Download</span></button>
                           {r.hasPaymentProof && (
                             <button className={`btn ${r.paymentStatus === 'SUBMITTED' ? 'btn-primary' : 'btn-quiet'}`} onClick={() => setProofJob(r)}>
                               <Icon name="eye" size={18} /> {r.paymentStatus === 'SUBMITTED' ? 'Check payment' : 'Payment'}
@@ -323,7 +327,7 @@ function PriceList({ services, reload, toast }) {
           <tbody>
             {services.map((s) => (
               <tr key={s.id}>
-                <td data-label="Option"><strong>{s.name}</strong><span className="muted small">{s.description}</span></td>
+                <td data-label="Option"><div className="cell-stack"><strong>{s.name}</strong><span className="muted small">{s.description}</span></div></td>
                 <td data-label="Per page (₹)">
                   <div className="rate">
                     <input aria-label={`Rate for ${s.name}`} type="number" min="0.25" step="0.25"
@@ -334,10 +338,12 @@ function PriceList({ services, reload, toast }) {
                   </div>
                 </td>
                 <td data-label="Visible to students">
-                  <button className="switch" role="switch" aria-checked={s.active} onClick={() => toggle(s)}>
-                    <span className="knob" /><span className="sr">{s.active ? 'Visible' : 'Hidden'}</span>
-                  </button>
-                  <span className="small muted"> {s.active ? 'Visible' : 'Hidden'}</span>
+                  <div className="sw-wrap">
+                    <button className="switch" role="switch" aria-checked={s.active} aria-label={`Show ${s.name} to students`} onClick={() => toggle(s)}>
+                      <span className="knob" />
+                    </button>
+                    <span className="small muted">{s.active ? 'Visible' : 'Hidden'}</span>
+                  </div>
                 </td>
               </tr>
             ))}
