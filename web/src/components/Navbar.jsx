@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { RegMark } from './Icon'
 import Icon from './Icon'
-import { isDemo } from '../api'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -18,7 +17,6 @@ export default function Navbar() {
           <span>CampusPrint</span>
         </Link>
         <nav className="nav-r" aria-label="Account">
-          {isDemo && <span className="demo-tag" title="Data is saved in this browser only">Demo data</span>}
           {user ? (
             <>
               <span className="who">

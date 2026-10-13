@@ -77,6 +77,13 @@
       <scope>runtime</scope>
     </dependency>
 
+    <!-- Reads the real page count of uploaded PDFs -->
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>3.0.3</version>
+    </dependency>
+
     <!-- Databases: H2 for local development, PostgreSQL for production -->
     <dependency>
       <groupId>com.h2database</groupId>

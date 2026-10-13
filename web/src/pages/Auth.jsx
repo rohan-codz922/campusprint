@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { isDemo } from '../api'
+import { api } from '../api'
 
 export function AuthShell({ title, intro, children, footer }) {
   return (
@@ -16,14 +16,16 @@ export function AuthShell({ title, intro, children, footer }) {
         <h2>Two roles, one queue</h2>
         <dl>
           <dt>Students</dt>
-          <dd>Send files, see the price first, follow each job, and cancel it before printing starts.</dd>
+          <dd>Send files, see the price first, pay by UPI if you like, and follow each print.</dd>
           <dt>Print desk</dt>
-          <dd>Work the queue, change job status, download files and manage the price list.</dd>
+          <dd>Work the queue, check payments, download files and manage prices.</dd>
         </dl>
       </aside>
     </main>
   )
 }
+
+const homeFor = (u) => (u.role === 'ADMIN' ? '/admin' : '/student')
 
 export function Login() {
   const { user, login } = useAuth()
@@ -32,7 +34,7 @@ export function Login() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (user) return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/student'} replace />
+  if (user) return <Navigate to={homeFor(user)} replace />
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
 
@@ -40,10 +42,14 @@ export function Login() {
     e.preventDefault()
     setError(''); setBusy(true)
     try {
-      const u = await login(form)
-      navigate(u.role === 'ADMIN' ? '/admin' : '/student', { replace: true })
+      const u = await login({ email: form.email.trim(), password: form.password })
+      navigate(homeFor(u), { replace: true })
     } catch (err) {
-      setError(err.message)
+      if (err.code === 'EMAIL_NOT_VERIFIED') {
+        navigate('/verify-email', { state: { email: form.email.trim(), resend: true } })
+      } else {
+        setError(err.message)
+      }
     } finally { setBusy(false) }
   }
 
@@ -63,44 +69,37 @@ export function Login() {
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
-      {isDemo && (
-        <div className="demo-box">
-          <p>Demo accounts</p>
-          <div className="row">
-            <button type="button" className="btn btn-quiet" onClick={() => setForm({ email: 'student@campus.edu', password: 'student123' })}>Fill student</button>
-            <button type="button" className="btn btn-quiet" onClick={() => setForm({ email: 'admin@campus.edu', password: 'admin123' })}>Fill print desk</button>
-          </div>
-        </div>
-      )}
     </AuthShell>
   )
 }
 
+const PASSWORD_OK = (p) => p.length >= 8 && p.length <= 72 && /[A-Za-z]/.test(p) && /\d/.test(p)
+
 export function Register() {
-  const { user, register } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', rollNo: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (user) return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/student'} replace />
+  if (user) return <Navigate to={homeFor(user)} replace />
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
-  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.email) && form.password.length >= 6
+  const valid = form.name.trim() && /\S+@\S+\.\S+/.test(form.email) && PASSWORD_OK(form.password)
 
   async function submit(e) {
     e.preventDefault()
     setError(''); setBusy(true)
     try {
-      await register(form)
-      navigate('/student', { replace: true })
+      await api.register({ ...form, name: form.name.trim(), email: form.email.trim(), rollNo: form.rollNo.trim() })
+      navigate('/verify-email', { state: { email: form.email.trim() } })
     } catch (err) {
       setError(err.message)
     } finally { setBusy(false) }
   }
 
   return (
-    <AuthShell title="Create your account" intro="Student accounts can send print jobs right away."
+    <AuthShell title="Create your account" intro="We will email you a code to confirm it is really your address."
       footer={<>Already registered? <Link to="/login">Sign in</Link></>}>
       <form onSubmit={submit} noValidate>
         <label className="field"><span>Full name</span>
@@ -109,16 +108,16 @@ export function Register() {
         <label className="field"><span>Roll number <em>(optional)</em></span>
           <input value={form.rollNo} onChange={set('rollNo')} />
         </label>
-        <label className="field"><span>College email</span>
+        <label className="field"><span>Email</span>
           <input type="email" autoComplete="email" required value={form.email} onChange={set('email')} />
         </label>
         <label className="field"><span>Password</span>
-          <input type="password" autoComplete="new-password" minLength={6} required value={form.password} onChange={set('password')} aria-describedby="pw-help" />
-          <small id="pw-help">At least 6 characters.</small>
+          <input type="password" autoComplete="new-password" required value={form.password} onChange={set('password')} aria-describedby="pw-help" />
+          <small id="pw-help">At least 8 characters, with a letter and a number.</small>
         </label>
         {error && <p className="inline-error" role="alert">{error}</p>}
         <button className="btn btn-primary btn-block" disabled={busy || !valid}>
-          {busy ? 'Creating account…' : 'Create account'}
+          {busy ? 'Sending code…' : 'Create account'}
         </button>
       </form>
     </AuthShell>

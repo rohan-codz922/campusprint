@@ -1,7 +1,9 @@
 package com.campusprint.repository
 
 import com.campusprint.domain.AppUser
-import com.campusprint.domain.PasswordReset
+import com.campusprint.domain.OtpCode
+import com.campusprint.domain.OtpPurpose
+import com.campusprint.domain.PaymentSettings
 import com.campusprint.domain.PrintRequest
 import com.campusprint.domain.PrintService
 import com.campusprint.domain.Role
@@ -12,7 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserRepository : JpaRepository<AppUser, Long> {
     fun findByEmailIgnoreCase(email: String): AppUser?
-    fun existsByEmailIgnoreCase(email: String): Boolean
     fun existsByRole(role: Role): Boolean
     fun findFirstByRole(role: Role): AppUser?
 }
@@ -26,6 +27,8 @@ interface PrintRequestRepository : JpaRepository<PrintRequest, Long> {
 
 interface StoredFileRepository : JpaRepository<StoredFile, Long>
 
-interface PasswordResetRepository : JpaRepository<PasswordReset, Long> {
-    fun findByEmail(email: String): PasswordReset?
+interface OtpCodeRepository : JpaRepository<OtpCode, Long> {
+    fun findByEmailAndPurpose(email: String, purpose: OtpPurpose): OtpCode?
 }
+
+interface PaymentSettingsRepository : JpaRepository<PaymentSettings, Long>

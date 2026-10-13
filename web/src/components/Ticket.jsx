@@ -12,7 +12,7 @@ export default function Ticket({ service, pages, copies, fileName, total, note }
 
       <dl className="ticket-rows">
         {fileName !== undefined && (
-          <div><dt>File</dt><dd className="clip">{fileName || 'Not attached yet'}</dd></div>
+          <div><dt>File</dt><dd className="clip" title={fileName || undefined}>{fileName || 'Not attached yet'}</dd></div>
         )}
         <div><dt>Print option</dt><dd>{service ? service.name : 'Choose one'}</dd></div>
         <div><dt>Rate</dt><dd>{service ? `${rupees(service.pricePerPage)} per page` : '–'}</dd></div>

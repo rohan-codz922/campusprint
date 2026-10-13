@@ -25,19 +25,16 @@ export function AuthProvider({ children }) {
     return () => { alive = false }
   }, [])
 
-  const login = useCallback(async (credentials) => {
-    const { token, user } = await api.login(credentials)
+  const startSession = useCallback(({ token, user }) => {
     tokenStore.set(token)
     setUser(user)
     return user
   }, [])
 
-  const register = useCallback(async (data) => {
-    const { token, user } = await api.register(data)
-    tokenStore.set(token)
-    setUser(user)
-    return user
-  }, [])
+  const login = useCallback(async (credentials) => startSession(await api.login(credentials)), [startSession])
+
+  // Registering does NOT sign anyone in: the email must be verified first.
+  const verifyEmail = useCallback(async (email, code) => startSession(await api.verifyEmail({ email, code })), [startSession])
 
   const logout = useCallback(() => {
     tokenStore.clear()
@@ -45,7 +42,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, verifyEmail, logout }}>
       {children}
     </AuthContext.Provider>
   )

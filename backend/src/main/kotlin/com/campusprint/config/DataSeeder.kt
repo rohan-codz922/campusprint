@@ -14,10 +14,10 @@ import java.math.BigDecimal
 
 /**
  * Runs at every startup.
- *  - Creates the admin account if none exists.
- *  - If one exists, keeps its email and password in sync with ADMIN_EMAIL / ADMIN_PASSWORD,
- *    so the admin password is changed by editing the environment variable and restarting.
+ *  - Creates the admin account if none exists, or keeps its email and password in sync with
+ *    ADMIN_EMAIL / ADMIN_PASSWORD. To change the admin password: edit the variable and restart.
  *  - Creates a starter price list if the table is empty.
+ * There are no default credentials: the app refuses to start without strong ones.
  */
 @Component
 class DataSeeder(
@@ -33,6 +33,11 @@ class DataSeeder(
     // trim() protects against a stray space or newline pasted into the environment variable
     private val email = adminEmail.trim().lowercase()
     private val password = adminPassword.trim()
+
+    init {
+        require(email.contains("@")) { "ADMIN_EMAIL must be a valid email address." }
+        require(password.length in 8..72) { "ADMIN_PASSWORD must be 8 to 72 characters long." }
+    }
 
     override fun run(vararg args: String) {
         syncAdmin()
@@ -57,9 +62,10 @@ class DataSeeder(
                     email = email,
                     passwordHash = requireNotNull(encoder.encode(password)),
                     role = Role.ADMIN,
+                    emailVerified = true,
                 ),
             )
-            log.info("Admin account created for {}", email)
+            log.info("Admin account created")
             return
         }
 
@@ -67,6 +73,10 @@ class DataSeeder(
         val takenBySomeoneElse = users.findByEmailIgnoreCase(email)?.let { it.id != admin.id } ?: false
         if (admin.email != email && !takenBySomeoneElse) {
             admin.email = email
+            changed = true
+        }
+        if (!admin.emailVerified) {
+            admin.emailVerified = true
             changed = true
         }
         if (!encoder.matches(password, admin.passwordHash)) {

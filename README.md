@@ -1,47 +1,36 @@
 # CampusPrint
 
-Folders: `web/` (React), `backend/` (Kotlin + Spring Boot), `mobile/` (Flutter), `docs/VIVA_GUIDE.md`.
+Folders: `web/` (React), `backend/` (Kotlin + Spring Boot), `mobile/` (Flutter, not yet updated for payments/OTP), `docs/`.
 
-## 1. Run the backend (needs JDK 17 and Maven, or open `backend/` in IntelliJ)
+## Run locally
+
+**Backend** (JDK 17 + Maven). Nothing secret is stored in any file. The script asks for an admin email/password and makes a random token secret:
 ```
 cd backend
-mvn spring-boot:run
+.\run-local.ps1
 ```
-API on http://localhost:8080. First start creates an admin: `admin@campus.edu` / `admin123` and 4 print options. Data is in `backend/data/` (H2).
+Verification and reset codes are printed in that window (no email service locally).
 
-## 2. Run the web app (needs Node 18+)
+**Web** (Node 18+):
 ```
 cd web
+copy .env.example .env      # VITE_API_URL=http://localhost:8080
 npm install
-cp .env.example .env      # set VITE_API_URL=http://localhost:8080  (leave empty for demo mode)
 npm run dev
 ```
 
-## 3. Run the mobile app (needs Flutter 3.22+)
-```
-cd mobile
-flutter create .          # generates android/ and ios/ (keeps lib/ and pubspec.yaml)
-flutter pub get
-flutter run --dart-define=API_URL=http://10.0.2.2:8080
-```
-Android only: in `android/app/src/main/AndroidManifest.xml` add `<uses-permission android:name="android.permission.INTERNET"/>` before `<application>`, and `android:usesCleartextTraffic="true"` inside `<application ...>` for local http testing.
+## Required settings (Render environment variables)
 
-## 4. Deploy
-**Database:** create a free PostgreSQL (Supabase or Neon). Note the JDBC URL, user, password.
+| Name | What it is |
+|---|---|
+| `DB_URL`, `DB_USER`, `DB_PASSWORD` | PostgreSQL (Neon). `DB_URL` looks like `jdbc:postgresql://HOST/neondb?sslmode=require` |
+| `JWT_SECRET` | random, 32+ characters. The app refuses to start without it |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | the print desk login (password 8-72 chars). Change the password by editing this and restarting |
+| `CORS_ORIGINS` | your website address, e.g. `https://campusprint-seven.vercel.app` (no trailing slash) |
+| `BREVO_API_KEY`, `MAIL_FROM`, `MAIL_FROM_NAME` | email for verification and reset codes (an `xkeysib-` API key) |
+| `PAYMENT_REQUIRED_PAGES` | optional, default 20: prints with this many pages (pages x copies) or more must be paid first |
 
-**Backend on Render:** New > Web Service > connect the repo, Root Directory `backend`, Runtime Docker. Environment variables:
-```
-DB_URL=jdbc:postgresql://HOST:5432/postgres?sslmode=require
-DB_USER=...   DB_PASSWORD=...
-JWT_SECRET=<random 40+ characters>
-ADMIN_EMAIL=...   ADMIN_PASSWORD=<strong password>
-CORS_ORIGINS=https://YOUR-APP.vercel.app
-```
-Health check path: `/api/services`. The free tier sleeps; the first request can take about a minute.
+Vercel needs one variable: `VITE_API_URL` = your Render address (no trailing slash).
+The Render address is also written in `web/vercel.json` under `connect-src`. If the API address ever changes, update both.
 
-**Web on Vercel:** import the repo, Root Directory `web`, framework Vite. Add env var `VITE_API_URL=https://YOUR-API.onrender.com`. Or from `web/`: `npm i -g vercel && vercel --prod`.
-
-**Mobile:** `flutter build apk --dart-define=API_URL=https://YOUR-API.onrender.com`
-
-## Known limits
-Uploaded files are stored on the server disk (lost on redeploy on free hosts). Use object storage for production.
+See `docs/SECURITY.md` for what is protected and how.

@@ -38,3 +38,20 @@ export default function StatusTrack({ status }) {
     </ol>
   )
 }
+
+// How the student is paying, and where that payment stands.
+export function PaymentChip({ status }) {
+  const map = {
+    NONE: ['none', 'Pay at the counter', 'rupee'],
+    SUBMITTED: ['review', 'Payment under review', 'clock'],
+    VERIFIED: ['ok', 'Payment verified', 'check'],
+    REJECTED: ['bad', 'Payment rejected', 'x'],
+  }
+  const [kind, label, icon] = map[status] || map.NONE
+  return (
+    <span className={`pay pay-${kind}`}>
+      <Icon name={icon} size={14} />
+      {label}
+    </span>
+  )
+}

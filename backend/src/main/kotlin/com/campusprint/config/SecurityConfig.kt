@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -32,22 +33,30 @@ class SecurityConfig(
             .csrf { it.disable() } // not needed: we use tokens in a header, not cookies
             .cors(Customizer.withDefaults())
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .headers { h ->
+                h.contentSecurityPolicy { it.policyDirectives("default-src 'none'; frame-ancestors 'none'") }
+                h.referrerPolicy { it.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER) }
+            }
             .authorizeHttpRequests {
                 it
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(
                         "/api/auth/register",
                         "/api/auth/login",
+                        "/api/auth/verify-email",
+                        "/api/auth/resend-code",
                         "/api/auth/forgot-password",
                         "/api/auth/reset-password",
                     ).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                     .requestMatchers("/api/services/**").hasRole("ADMIN")
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/settings/payment").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/requests").hasRole("STUDENT")
                     .requestMatchers(HttpMethod.GET, "/api/requests").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.PATCH, "/api/requests/*/status").hasRole("ADMIN")
-                    .anyRequest().authenticated()
+                    .requestMatchers(HttpMethod.PATCH, "/api/requests/*/payment").hasRole("ADMIN")
+                    .anyRequest().authenticated() // everything else needs a valid login
             }
             .exceptionHandling {
                 // 401 = not signed in (or token invalid). 403 = signed in but wrong role.
@@ -70,13 +79,14 @@ class SecurityConfig(
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
-    /** Lets the React site (a different origin) call this API from the browser. */
+    /** Lets only OUR website (a different origin) call this API from the browser. */
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
         config.allowedOriginPatterns = corsOrigins.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-        config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-        config.allowedHeaders = listOf("*")
+        config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "OPTIONS")
+        config.allowedHeaders = listOf("Authorization", "Content-Type")
+        config.maxAge = 3600
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", config)
         return source

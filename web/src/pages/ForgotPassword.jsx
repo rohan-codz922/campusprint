@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api, isDemo } from '../api'
+import { api } from '../api'
 import { useToast } from '../components/Toast'
 import { AuthShell } from './Auth'
 
@@ -15,6 +15,8 @@ export default function ForgotPassword() {
   const [info, setInfo] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  const passwordOk = password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password)
 
   async function sendCode(e) {
     e.preventDefault()
@@ -62,18 +64,17 @@ export default function ForgotPassword() {
       footer={<>No code? <button type="button" className="linklike" onClick={() => { setStep('email'); setError('') }}>Send a new one</button> (one per minute).</>}>
       <form onSubmit={reset} noValidate>
         <p className="notice">{info}</p>
-        {isDemo && <p className="muted small" style={{ marginBottom: '.9rem' }}>Demo mode: the code is 123456.</p>}
         <label className="field"><span>6-digit code</span>
           <input className="code-input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
         </label>
         <label className="field"><span>New password</span>
-          <input type="password" autoComplete="new-password" minLength={6} required value={password}
+          <input type="password" autoComplete="new-password" required value={password}
             onChange={(e) => setPassword(e.target.value)} aria-describedby="np-help" />
-          <small id="np-help">At least 6 characters.</small>
+          <small id="np-help">At least 8 characters, with a letter and a number.</small>
         </label>
         {error && <p className="inline-error" role="alert">{error}</p>}
-        <button className="btn btn-primary btn-block" disabled={busy || code.length !== 6 || password.length < 6}>
+        <button className="btn btn-primary btn-block" disabled={busy || code.length !== 6 || !passwordOk}>
           {busy ? 'Saving…' : 'Change password'}
         </button>
       </form>

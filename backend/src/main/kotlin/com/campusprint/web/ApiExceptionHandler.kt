@@ -12,15 +12,18 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.multipart.support.MissingServletRequestPartException
 
-/** One place that turns exceptions into the {"message": "..."} JSON the frontend shows to the user. */
+/** One place that turns exceptions into the {"message": "..."} JSON the website shows to the user. */
 @RestControllerAdvice
 class ApiExceptionHandler {
 
-    private fun body(status: HttpStatus, message: String) =
-        ResponseEntity.status(status).body(mapOf("message" to message))
+    private fun body(status: HttpStatus, message: String, code: String? = null): ResponseEntity<Map<String, String>> {
+        val map = mutableMapOf("message" to message)
+        if (code != null) map["code"] = code
+        return ResponseEntity.status(status).body(map)
+    }
 
     @ExceptionHandler(ApiException::class)
-    fun handleApi(e: ApiException) = body(e.status, e.message)
+    fun handleApi(e: ApiException) = body(e.status, e.message, e.code)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(e: MethodArgumentNotValidException) =
@@ -28,7 +31,7 @@ class ApiExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException::class)
     fun handleTooLarge(e: MaxUploadSizeExceededException) =
-        body(HttpStatus.PAYLOAD_TOO_LARGE, "That file is too large. The limit is 10 MB.")
+        body(HttpStatus.PAYLOAD_TOO_LARGE, "That upload is too large. Documents can be up to 10 MB and screenshots up to 3 MB.")
 
     @ExceptionHandler(
         MissingServletRequestParameterException::class,

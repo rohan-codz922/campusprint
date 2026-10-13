@@ -76,3 +76,10 @@ Flutter (app) --/                        Spring Security + JWT          (H2 loca
 
 ## 7. Testing evidence you can show
 Browser test of the web app covered: price estimator, registration, PDF page auto-count, job submission, student blocked from `/admin`, admin changing status, admin adding a price option, student seeing "Ready", wrong-password error, and no horizontal scroll on a 390 px phone.
+
+
+## 8. Added later: payments, verification and security
+- **Email verification:** sign-up creates a locked account; a 6-digit code (valid 10 minutes, 5 tries) unlocks it.
+- **Payment flow:** prints of 20+ pages (pages x copies) must be paid first by UPI. The admin uploads the shop QR once; the website reads the UPI ID and name from it and generates a QR with the exact amount for every job. The student uploads a screenshot; the admin verifies it, and only then can printing start (the server refuses otherwise).
+- **Server-side page counting:** Apache PDFBox reads the real page count, so students cannot lie about pages.
+- **Security:** see `docs/SECURITY.md`. Likely questions: "How do you stop brute force?" (lockout + rate limit), "What if a token is stolen?" (12-hour expiry, invalidated on password change), "Where are secrets?" (only environment variables).

@@ -79,9 +79,9 @@ export default function Landing() {
       <section className="wrap band">
         <h2>How a job moves through the desk</h2>
         <ol className="steps">
-          <li><strong>You send the file</strong><p>PDF, Word, PowerPoint or an image up to 10 MB, with the number of pages and copies.</p></li>
-          <li><strong>The desk prints it</strong><p>Staff see every job in one queue and mark it as printing, then ready.</p></li>
-          <li><strong>You collect and pay</strong><p>Show your name at the counter, pay the amount on your ticket, and take your pages.</p></li>
+          <li><strong>You send the file</strong><p>Upload a PDF or a photo, up to 10 MB. We count the pages for you, so the price is exact.</p></li>
+          <li><strong>The desk prints it</strong><p>Staff see every job in one queue. Big jobs are paid first by UPI, small ones at the counter.</p></li>
+          <li><strong>You collect and pay</strong><p>Show your name at the counter, pay if you have not already, and take your pages.</p></li>
         </ol>
       </section>
 

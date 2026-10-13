@@ -18,6 +18,11 @@ enum class Role { STUDENT, ADMIN }
 
 enum class RequestStatus { PENDING, PRINTING, READY, COLLECTED, REJECTED, CANCELLED }
 
+/** NONE = pay at the counter. SUBMITTED = screenshot uploaded, waiting for the print desk to check it. */
+enum class PaymentStatus { NONE, SUBMITTED, VERIFIED, REJECTED }
+
+enum class OtpPurpose { VERIFY_EMAIL, RESET_PASSWORD }
+
 /** A person who can sign in. The role decides what they may do. */
 @Entity
 @Table(name = "app_users") // "user" is a reserved word in PostgreSQL
@@ -35,6 +40,10 @@ class AppUser(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var role: Role,
+
+    /** False until the person types the code we emailed them. Unverified accounts cannot sign in. */
+    @Column(nullable = false)
+    var emailVerified: Boolean = false,
 
     @Column(length = 30)
     var rollNo: String? = null,
@@ -80,10 +89,11 @@ class PrintRequest(
     @Column(nullable = false)
     var fileName: String,
 
-    /** Id of the row in stored_files that holds the uploaded document's bytes. */
+    /** Id of the row in stored_files that holds the document's bytes. */
     @Column(nullable = false)
     var fileId: Long,
 
+    /** Counted by the SERVER from the file itself. The student cannot choose it. */
     @Column(nullable = false)
     var pages: Int,
 
@@ -96,6 +106,18 @@ class PrintRequest(
     /** Calculated by the server: pricePerPage x pages x copies. */
     @Column(nullable = false, precision = 10, scale = 2)
     var totalPrice: BigDecimal,
+
+    /** True when pages x copies reached the limit, so payment must be verified before printing. */
+    @Column(nullable = false)
+    var paymentRequired: Boolean,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var paymentStatus: PaymentStatus = PaymentStatus.NONE,
+
+    /** stored_files id of the payment screenshot, if one was uploaded. */
+    @Column
+    var paymentFileId: Long? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -112,11 +134,7 @@ class PrintRequest(
     var id: Long? = null,
 )
 
-/**
- * The uploaded document itself, kept in the database (bytea in PostgreSQL).
- * It lives in its own table so listing print requests never loads file bytes.
- * Unlike files on a server disk, it survives redeploys and restarts.
- */
+/** An uploaded file (a document to print, or a payment screenshot), kept in the database. */
 @Entity
 @Table(name = "stored_files")
 class StoredFile(
@@ -132,12 +150,16 @@ class StoredFile(
     var id: Long? = null,
 )
 
-/** One pending password-reset code per account. Only a hash of the 6-digit code is stored. */
+/** One pending 6-digit code per account and purpose. Only a hash of the code is stored. */
 @Entity
-@Table(name = "password_resets")
-class PasswordReset(
+@Table(name = "otp_codes")
+class OtpCode(
     @Column(nullable = false)
     var email: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var purpose: OtpPurpose,
 
     @Column(nullable = false)
     var codeHash: String,
@@ -155,4 +177,21 @@ class PasswordReset(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
+)
+
+/** The print shop's UPI details, read from the QR code the admin uploads. A single row (id = 1). */
+@Entity
+@Table(name = "payment_settings")
+class PaymentSettings(
+    @Column(nullable = false, length = 100)
+    var payeeName: String,
+
+    @Column(nullable = false, length = 256)
+    var upiId: String,
+
+    @Column(nullable = false)
+    var updatedAt: Instant = Instant.now(),
+
+    @Id
+    var id: Long = 1,
 )
