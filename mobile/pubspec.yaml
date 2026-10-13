@@ -1,0 +1,24 @@
+name: campusprint_mobile
+description: CampusPrint - student and print desk mobile app (Flutter).
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2              # calls the REST API
+  provider: ^6.1.2          # simple state management
+  shared_preferences: ^2.3.3 # keeps the login token on the phone
+  file_picker: ^8.1.4       # choose a document to print
+  intl: ^0.19.0             # date formatting
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
